@@ -1,0 +1,6 @@
+# Local/secret files - never commit
+config/config.local.php
+uploads/
+*.log
+.vscode/
+.DS_Store
