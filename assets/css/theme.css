@@ -1,0 +1,67 @@
+/* =====================================================================
+   FirstStep - design tokens + shared base styles
+   Load AFTER Bootstrap so these rules override Bootstrap defaults.
+   Palette is taken from the logo: blue #0868F8 and orange #F87018.
+   ===================================================================== */
+:root {
+  /* Brand */
+  --fs-blue:        #0868f8;  /* logo blue: large shapes, decoration            */
+  --fs-blue-strong: #0553cf;  /* buttons + links (white text contrast 6.7:1)    */
+  --fs-blue-deep:   #0a2a66;  /* hover / dark accents                           */
+  --fs-orange:      #f87018;  /* logo orange: decoration ONLY (fails as text)   */
+  --fs-orange-soft: #fff0e4;
+
+  /* Neutrals */
+  --fs-ink:     #0b1f44;      /* main text (16:1 on white)                      */
+  --fs-muted:   #5a6b88;      /* secondary text (5.4:1 on white)                */
+  --fs-line:    #d8e1f0;      /* borders                                        */
+  --fs-surface: #f3f7ff;      /* soft blue-tinted background                    */
+
+  --fs-radius: 12px;
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  /* Make Bootstrap itself use our tokens */
+  --bs-body-font-family: var(--font-sans);
+  --bs-body-color: var(--fs-ink);
+  --bs-link-color: var(--fs-blue-strong);
+  --bs-link-hover-color: var(--fs-blue-deep);
+}
+
+body { font-family: var(--font-sans); color: var(--fs-ink); }
+
+h1, h2, h3, h4, h5, h6 { font-weight: 700; letter-spacing: -0.015em; }
+
+/* ---------- Buttons ---------- */
+.btn-brand {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: var(--fs-blue-strong);
+  --bs-btn-border-color: var(--fs-blue-strong);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: var(--fs-blue-deep);
+  --bs-btn-hover-border-color: var(--fs-blue-deep);
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: var(--fs-blue-deep);
+  --bs-btn-active-border-color: var(--fs-blue-deep);
+  --bs-btn-focus-shadow-rgb: 8, 104, 248;
+  --bs-btn-border-radius: 10px;
+  font-weight: 700;
+  padding: 0.75rem 1.25rem;
+}
+
+/* ---------- Forms ---------- */
+.form-label { font-weight: 600; font-size: 0.875rem; margin-bottom: 0.4rem; }
+
+.form-control, .form-select {
+  border: 1px solid var(--fs-line);
+  border-radius: 10px;
+  padding: 0.7rem 0.9rem;
+  background-color: #fbfcff;
+}
+.form-control:focus, .form-select:focus {
+  background-color: #fff;
+  border-color: var(--fs-blue);
+  box-shadow: 0 0 0 0.25rem rgba(8, 104, 248, 0.18);
+}
+.form-text { color: var(--fs-muted); }
+
+.alert { border-radius: 10px; }
