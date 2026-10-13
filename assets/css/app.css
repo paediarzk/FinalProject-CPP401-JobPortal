@@ -1,0 +1,47 @@
+/* =====================================================================
+   FirstStep - components for pages AFTER login (cards, skill chips, progress)
+   Load after theme.css. Uses the same tokens (with safe fallbacks).
+   ===================================================================== */
+
+.app-card {
+  background: #fff;
+  border: 1px solid var(--fs-line, #d8e1f0);
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1rem;
+}
+.app-card__title {
+  margin: 0 0 1rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--fs-ink, #0b1f44);
+}
+.app-card__hint { color: var(--fs-muted, #5a6b88); font-size: 0.875rem; margin: -0.5rem 0 1rem; }
+
+/* Skill chips: a checkbox + label that looks like a pill */
+.skill-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.skill-chips .btn-check + label {
+  border: 1px solid var(--fs-line, #d8e1f0);
+  background: #fff;
+  color: var(--fs-ink, #0b1f44);
+  border-radius: 999px;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+}
+.skill-chips .btn-check + label:hover { border-color: var(--fs-blue, #0868f8); }
+.skill-chips .btn-check:checked + label {
+  background: var(--fs-blue-strong, #0553cf);
+  border-color: var(--fs-blue-strong, #0553cf);
+  color: #fff;
+}
+.skill-chips .btn-check:focus-visible + label {
+  outline: 3px solid rgba(8, 104, 248, 0.35);
+  outline-offset: 2px;
+}
+
+/* Progress bar in brand colour */
+.progress { height: 0.6rem; background: var(--fs-surface, #f3f7ff); border-radius: 999px; }
+.progress-bar { background: var(--fs-blue-strong, #0553cf); border-radius: 999px; }
