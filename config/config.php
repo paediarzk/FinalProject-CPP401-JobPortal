@@ -12,4 +12,4 @@ const DB_PASS = '';       // XAMPP default (empty)
 
 // URL path where the app lives, e.g. http://localhost/jobportal
 const BASE_URL = '/jobportal';
-const APP_NAME = 'FisrtStep';
+const APP_NAME = 'FirstStep';
