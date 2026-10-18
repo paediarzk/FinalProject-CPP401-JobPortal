@@ -45,3 +45,21 @@
 /* Progress bar in brand colour */
 .progress { height: 0.6rem; background: var(--fs-surface, #f3f7ff); border-radius: 999px; }
 .progress-bar { background: var(--fs-blue-strong, #0553cf); border-radius: 999px; }
+
+/* Language cards (profile page) */
+.language-card {
+  border: 1px solid var(--fs-line, #d8e1f0);
+  border-radius: 12px;
+  background: #fbfcff;
+  padding: 1rem 1.1rem;
+  margin-bottom: 0.9rem;
+}
+
+/* Education cards (profile page) */
+.education-card {
+  border: 1px solid var(--fs-line, #d8e1f0);
+  border-radius: 12px;
+  background: #fbfcff;
+  padding: 1rem 1.1rem;
+  margin-bottom: 0.9rem;
+}

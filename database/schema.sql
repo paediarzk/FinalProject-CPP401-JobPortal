@@ -24,8 +24,6 @@ CREATE TABLE users (
 CREATE TABLE job_seekers (
   user_id         INT UNSIGNED PRIMARY KEY,
   full_name       VARCHAR(150) NOT NULL,
-  education_level ENUM('diploma','bachelor','master','other') NOT NULL,
-  institution     VARCHAR(200) NOT NULL,
   phone           VARCHAR(20)  NULL,
   city            VARCHAR(100) NULL,
   bio             TEXT NULL,
@@ -33,6 +31,25 @@ CREATE TABLE job_seekers (
   cv_path         VARCHAR(255) NULL,
   updated_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT fk_js_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- 2b. EDUCATIONS: one job seeker has 1..5 education entries (Milestone 2-B).
+--     The first entry is created at registration from the "education level" and "institution" fields.
+CREATE TABLE educations (
+  id             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  job_seeker_id  INT UNSIGNED NOT NULL,
+  institution    VARCHAR(200) NOT NULL,
+  degree         ENUM('diploma','bachelor','master','other') NOT NULL,
+  field_of_study VARCHAR(150) NULL,
+  gpa            DECIMAL(3,2) NULL,                  -- scale 0.00 - 4.00
+  start_year     SMALLINT UNSIGNED NULL,
+  end_year       SMALLINT UNSIGNED NULL,             -- actual OR expected graduation year
+  CONSTRAINT fk_edu_js FOREIGN KEY (job_seeker_id) REFERENCES job_seekers(user_id) ON DELETE CASCADE,
+  CONSTRAINT chk_edu_gpa   CHECK (gpa IS NULL OR (gpa >= 0 AND gpa <= 4)),
+  CONSTRAINT chk_edu_years CHECK (
+        (start_year IS NULL OR start_year BETWEEN 1950 AND 2100)
+    AND (end_year   IS NULL OR end_year   BETWEEN 1950 AND 2100)
+    AND (start_year IS NULL OR end_year IS NULL OR end_year >= start_year))
 ) ENGINE=InnoDB;
 
 -- 3. EMPLOYERS: profile of a company / organisation (1-to-1 with users).
@@ -58,6 +75,27 @@ CREATE TABLE job_seeker_skills (
   PRIMARY KEY (job_seeker_id, skill_id),         -- composite PK also blocks duplicates
   CONSTRAINT fk_jss_js    FOREIGN KEY (job_seeker_id) REFERENCES job_seekers(user_id) ON DELETE CASCADE,
   CONSTRAINT fk_jss_skill FOREIGN KEY (skill_id)      REFERENCES skills(id)           ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- 5b. LANGUAGES: master list of languages (added in Milestone 2-A+).
+CREATE TABLE languages (
+  id   INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(60) NOT NULL,
+  CONSTRAINT uq_languages_name UNIQUE (name)
+) ENGINE=InnoDB;
+
+-- 5c. JOB_SEEKER_LANGUAGES: many-to-many (job seeker <-> language) with proficiency levels.
+--     overall is required; speaking / reading / writing are optional.
+CREATE TABLE job_seeker_languages (
+  job_seeker_id INT UNSIGNED NOT NULL,
+  language_id   INT UNSIGNED NOT NULL,
+  overall       ENUM('basic','conversational','fluent','native') NOT NULL,
+  speaking      ENUM('basic','conversational','fluent','native') NULL,
+  reading       ENUM('basic','conversational','fluent','native') NULL,
+  writing       ENUM('basic','conversational','fluent','native') NULL,
+  PRIMARY KEY (job_seeker_id, language_id),
+  CONSTRAINT fk_jsl_js   FOREIGN KEY (job_seeker_id) REFERENCES job_seekers(user_id) ON DELETE CASCADE,
+  CONSTRAINT fk_jsl_lang FOREIGN KEY (language_id)   REFERENCES languages(id)        ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 -- 6. VACANCIES: posted by employers.

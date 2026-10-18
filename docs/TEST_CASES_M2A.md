@@ -11,7 +11,7 @@ All test cases were executed manually in the browser. Precondition for most test
 | P05 | Dashboard before filling | Open dashboard with a new account | "0 of 5 optional details completed", 0% | The dashboard displayed "0 of 5 optional details completed" with 0% | Pass | Figure P05 |
 | P06 | Save valid profile | Fill phone, city, bio, interests, select 3 skills, Save | Redirect to profile, green success message | The user was redirected to the profile page and a green success message was displayed | Pass | Figure P06 |
 | P07 | Data persisted | Check table `job_seekers` in phpMyAdmin | phone and city saved | The phone and city values were stored in the `job_seekers` table | Pass | Figure P07 |
-| P08 | Skills persisted | Check table `job_seekers_skills` for user ID 13 | 3 rows for this user | 3 rows were stored in `job_seeker_skills` for user ID 13 | Pass | Figure P08 |
+| P08 | Skills persisted | Check table `job_seeker_skills` for user ID 13 | 3 rows for this user | 3 rows were stored in `job_seeker_skills` for user ID 13 | Pass | Figure P08 |
 | P09 | Success message shown | After P06 | "Your profile has been saved." | The message "Your profile has been saved." was displayed | Pass | Figure P09 |
 | P10 | Saved skills pre-checked | Reload profile page | The 3 chosen skills are highlighted | The 3 previously chosen skills were highlighted after reload | Pass | Figure P10 |
 | P11 | Message is one-time | Reload again | Success message gone | The success message no longer appeared after reloading | Pass | Figure P11 |

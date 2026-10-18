@@ -6,7 +6,7 @@ This journal records problems encountered during implementation, their causes, a
 
 ## Entry 1 – Project tables imported into the wrong database
 
-- **Date:** 2026-10-06
+- **Date:** 2026-10-03
 - **Phase:** Milestone 1 – Environment and database setup
 - **Problem:** After importing `schema.sql` through phpMyAdmin, the eight project tables (`users`, `job_seekers`, `employers`, `skills`, `job_seeker_skills`, `vacancies`, `vacancy_skills`, `applications`) appeared inside the MySQL system database named `mysql`, while the `jobportal` database remained empty.
 - **Probable cause:** The import was started while the system database `mysql` was selected in the phpMyAdmin sidebar. The exact mechanism was not investigated further.
@@ -18,11 +18,11 @@ This journal records problems encountered during implementation, their causes, a
 
 ## Entry 2 – First push to GitHub failed (authentication error)
 
-- **Date:** 2026-10-03
+- **Date:** 2026-10-06
 - **Phase:** Milestone 1 – Version control setup
 - **Problem:** The first `git push -u origin main` failed with the message "Password authentication is not supported for Git operations".
 - **Cause:** No Git credential helper was configured (`git config --global credential.helper` returned an empty value), so no sign-in prompt appeared. In addition, GitHub no longer accepts account passwords for Git operations over HTTPS.
-- **Solution:** The credential helper was configured with `git config --global credential.helper manager`, and the account was then authenticated using [browser sign-in / personal access token – keep the one you actually used].
+- **Solution:** The credential helper was configured with `git config --global credential.helper manager`, and the account was then authenticated using browser sign-in.
 - **Result:** The push succeeded and the Milestone 1 source code became available in the private repository.
 - **Lesson learned:** HTTPS access to GitHub requires token-based or browser-based authentication. Access tokens must never be shared, pasted into code, or committed to the repository.
 
@@ -38,6 +38,8 @@ This journal records problems encountered during implementation, their causes, a
 - **Result:** The logo displayed at the intended size and the button colours matched the navbar theme.
 - **Lesson learned:** Keeping the layout in one shared file (`header.php`) allows a change to be made in a single place. Browser cache must be bypassed when testing style changes, and images should have an explicit height.
 
+---
+
 ## Entry 4 – Misspelled application name and incomplete shared page header
 
 - **Date:** 2026-10-13
@@ -47,6 +49,8 @@ This journal records problems encountered during implementation, their causes, a
 - **Solution:** The constant was corrected to "FirstStep", and the `<head>` block of `header.php` was replaced with one block containing a single title, the web font, Bootstrap, `theme.css`, `app.css`, and `style.css`, in that order.
 - **Result:** The correct name is shown in the tab titles and footer, the "Save changes" button and the skill chips are styled, and the page contains a single `<title>`.
 - **Lesson learned:** Shared layout files must be reviewed whenever a new stylesheet is introduced. A short review of the previous milestone's files before starting a new milestone detects inconsistencies early.
+
+---
 
 ## Entry 5 – Browser console rejected the "allow pasting" command
 
@@ -76,7 +80,31 @@ This journal records problems encountered during implementation, their causes, a
 | Milestone | Start | End | Approx. hours per week | Notes |
 |---|---|---|---|---|
 | M1 – Foundation and authentication | 2026-10-01 | 2026-10-06 | | Tag m1-foundation |
-| M2-A – Job seeker profile | 2926-10-09 | | | |
+| M2-A – Job seeker profile | 2926-10-09 | 2026-10-14| | |
 
 **Software versions:** PHP 8.2.4 · MariaDB 10.4.28 · Apache 2.4.56 · XAMPP 8.2.4 (Control Panel v3.3.0) · Bootstrap 5.3.3 (via CDN)
 **Operating system:** Windows 11 Home · **Browser used for testing:** edge://155.0.4283.45 (Official build) (64-bit) · **Editor:** Visual Studio Code v1.141.0 · **Version control:** Git version 2.56.0.windows.1
+
+## Decision Log
+
+### Decision 1 – Skills are selected from a predefined list
+- **Decision:** Job seekers and (later) employers choose skills from a predefined list of 37 skills stored in the `skills` table.
+- **Alternatives considered:** Free-text skills entered by users; user-created skills approved by an administrator.
+- **Rationale:** Prevents duplicates and inconsistent spelling (supports normalisation), matches Table 3.1 ("selected from a skill list"), and avoids moderation work before the administrator module (Milestone 3).
+- **Status:** Implemented in Milestone 2-A (migration 002).
+
+ ### Decision 2 – Only a Languages section is added to the profile
+- **Decision:** A predefined language list with proficiency levels (basic, conversational, fluent, native) is added. "Other skills" is not added.
+- **Alternatives considered:** Free-text or user-created skills (risk of duplicates and moderation workload).
+- **Status:** Implemented (migration 003).
+
+### Decision 3 – New vacancies start as "pending"
+- **Decision:** A vacancy posted by an employer has the status "pending" until an administrator approves it (Milestone 3).
+- **Rationale:** Reduces fake or inappropriate postings before they become visible to job seekers.
+- **Status:** To be implemented in Milestone 2-C (status field) and Milestone 3 (approval).
+
+### Decision 4 – Education stored as multiple entries in its own table
+- **Decision:** Education is stored in the table `educations` (1 to 5 entries per job seeker: school or university, degree, field of study, GPA on a 4.00 scale, start and end year). The education level and institution entered at registration become the first entry; the two old columns of `job_seekers` were removed after their data was copied.
+- **Alternatives considered:** Keeping both the old columns and the new table (duplicated data); a single education entry only; an official list of institutions (needs an external dataset and maintenance).
+- **Rationale:** Employers filter fresh graduates by university, field of study, GPA and graduation year; a separate table avoids repeating groups and keeps the schema normalised.
+- **Status:** Implemented (migration 005).

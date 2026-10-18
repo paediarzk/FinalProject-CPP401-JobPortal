@@ -5,7 +5,7 @@ require_once __DIR__ . '/../includes/profile.php';
 $user     = require_role('job_seeker');
 $profile  = get_job_seeker_profile($user['id']);
 $skillIds = get_job_seeker_skill_ids($user['id']);
-$progress = profile_completeness($profile ?? [], count($skillIds));
+$progress = profile_completeness($profile ?? [], count($skillIds), count(get_job_seeker_languages($user['id'])));
 
 $pageTitle = 'Job Seeker Dashboard';
 require __DIR__ . '/../includes/header.php';

@@ -94,10 +94,14 @@ function register_job_seeker(array $in): array
     }
 
     return create_account($email, $pass, 'job_seeker', function (PDO $pdo, int $id) use ($name, $level, $inst) {
+        $pdo->prepare('INSERT INTO job_seekers (user_id, full_name) VALUES (:id, :name)')
+            ->execute([':id' => $id, ':name' => $name]);
+
+        // The education level and institution typed at registration become the FIRST education entry.
+        // (More entries, field of study, GPA and years are added later on the profile page.)
         $pdo->prepare(
-            'INSERT INTO job_seekers (user_id, full_name, education_level, institution)
-             VALUES (:id, :name, :level, :inst)'
-        )->execute([':id' => $id, ':name' => $name, ':level' => $level, ':inst' => $inst]);
+            'INSERT INTO educations (job_seeker_id, institution, degree) VALUES (:id, :inst, :level)'
+        )->execute([':id' => $id, ':inst' => $inst, ':level' => $level]);
     });
 }
 
