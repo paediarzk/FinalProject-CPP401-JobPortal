@@ -18,7 +18,7 @@ This journal records problems encountered during implementation, their causes, a
 
 ## Entry 2 – First push to GitHub failed (authentication error)
 
-- **Date:** 2026-10-06
+- **Date:** 2026-10-05
 - **Phase:** Milestone 1 – Version control setup
 - **Problem:** The first `git push -u origin main` failed with the message "Password authentication is not supported for Git operations".
 - **Cause:** No Git credential helper was configured (`git config --global credential.helper` returned an empty value), so no sign-in prompt appeared. In addition, GitHub no longer accepts account passwords for Git operations over HTTPS.
@@ -61,10 +61,21 @@ This journal records problems encountered during implementation, their causes, a
 - **Solution:** the test command was pasted first and it was accepted without the phrase / the phrase was typed after the browser warning / short commands were typed manually.
 - **Result:** The test commands could be executed and the corresponding test cases were carried out.
 - **Lesson learned:** Verify the behaviour of testing tools before the test session, and document the exact commands in the test plan so that they can be pasted instead of retyped.
+
 ---
 
-## Entry template (copy for new entries)
+## Entry 6 – Error markers shown by the phpMyAdmin SQL editor (migration 005)
 
+- **Date:** 2026-10-18
+- **Phase:** Milestone 2-B – Education migration
+- **Problem:** After pasting migration 005 into the SQL tab of phpMyAdmin, the editor showed several red error markers (for example "Unexpected token"), before the query was executed.
+- **Cause:** The markers come from the editor's built-in syntax checker, not from the database server. The checker does not recognise some MariaDB syntax used in the script (CHECK constraints and SQL written inside quoted text for a prepared statement).
+- **Solution:** The database was exported first and the old data was photographed; the script was then executed with the "Go" button. The result was verified by browsing the new table and the structure of `job_seekers`.
+- **Result:** [Confirm what you saw after pressing Go.]
+- **Lesson learned:** Warnings of the editor must be distinguished from errors returned by the server. Back up before destructive changes and verify the result with queries.
+
+
+## Entry template (copy for new entries)
 ## Entry N – Short title of the problem
 
 - **Date:** YYYY-MM-DD
@@ -80,10 +91,12 @@ This journal records problems encountered during implementation, their causes, a
 | Milestone | Start | End | Approx. hours per week | Notes |
 |---|---|---|---|---|
 | M1 – Foundation and authentication | 2026-10-01 | 2026-10-06 | | Tag m1-foundation |
-| M2-A – Job seeker profile | 2926-10-09 | 2026-10-14| | |
+| M2-A – Job seeker profile | 2026-10-09 | 2026-10-14| | |
+| M2-B – Languages, CV, Education | 2026-10-14 | 2026-10-18 | | |
+| M2-C – Employer vacancies | 2026-10-18 | 2026-10-20 | | Tag m2-profile-vacancy |
 
 **Software versions:** PHP 8.2.4 · MariaDB 10.4.28 · Apache 2.4.56 · XAMPP 8.2.4 (Control Panel v3.3.0) · Bootstrap 5.3.3 (via CDN)
-**Operating system:** Windows 11 Home · **Browser used for testing:** edge://155.0.4283.45 (Official build) (64-bit) · **Editor:** Visual Studio Code v1.141.0 · **Version control:** Git version 2.56.0.windows.1
+**Operating system:** Windows 11 Home · **Browser used for testing:** Microsoft Edge 155.0.4283.45 · **Editor:** Visual Studio Code v1.141.0 · **Version control:** Git version 2.56.0.windows.1
 
 ## Decision Log
 
@@ -93,10 +106,10 @@ This journal records problems encountered during implementation, their causes, a
 - **Rationale:** Prevents duplicates and inconsistent spelling (supports normalisation), matches Table 3.1 ("selected from a skill list"), and avoids moderation work before the administrator module (Milestone 3).
 - **Status:** Implemented in Milestone 2-A (migration 002).
 
- ### Decision 2 – Only a Languages section is added to the profile
-- **Decision:** A predefined language list with proficiency levels (basic, conversational, fluent, native) is added. "Other skills" is not added.
-- **Alternatives considered:** Free-text or user-created skills (risk of duplicates and moderation workload).
-- **Status:** Implemented (migration 003).
+### Decision 2 – Only a Languages section is added to the profile
+- **Decision:** The profile gets a Languages section with dynamic cards: language and overall level are required; speaking, reading and writing are optional. Languages come from a predefined list of 22 international languages, up to 8 per profile. The "I am fluent" checkbox only fills the four levels in the browser and is not stored. "Other skills" is not added.
+- **Alternatives considered:** Free-text or user-created skills (duplicates and moderation workload).
+- **Status:** Implemented (migrations 003 and 004).
 
 ### Decision 3 – New vacancies start as "pending"
 - **Decision:** A vacancy posted by an employer has the status "pending" until an administrator approves it (Milestone 3).
@@ -108,3 +121,13 @@ This journal records problems encountered during implementation, their causes, a
 - **Alternatives considered:** Keeping both the old columns and the new table (duplicated data); a single education entry only; an official list of institutions (needs an external dataset and maintenance).
 - **Rationale:** Employers filter fresh graduates by university, field of study, GPA and graduation year; a separate table avoids repeating groups and keeps the schema normalised.
 - **Status:** Implemented (migration 005).
+
+### Decision 5 – Vacancy status rules
+- **Decision:** A new vacancy is "pending" until an administrator approves it. Editing a published or rejected vacancy returns it to "pending". Closing is final: a closed vacancy cannot be edited or reopened, and vacancies are never deleted.
+- **Rationale:** Approved content must not change without a new review, and deleting a vacancy would remove the application history that Milestone 3 will record.
+- **Status:** Implemented (Milestone 2-C); approval and rejection by the administrator follow in Milestone 3.
+
+### Decision 6 – Vacancy input rules
+- **Decision:** Allowance is a whole amount in IDR per month (optional); required skills are chosen from the predefined list (up to 10, optional); the deadline must lie between today and one year ahead, using Jakarta time.
+- **Rationale:** Prevents typing errors and keeps data comparable; Jakarta time avoids dependence on the server's time zone setting.
+- **Status:** Implemented (Milestone 2-C).
