@@ -93,7 +93,8 @@ require __DIR__ . '/../includes/header.php';
     <?php elseif ($existing['status'] === 'published'): ?>
       <div class="alert alert-warning">This vacancy is published. Saving your changes sends it back for approval, and it will be hidden from job seekers until it is approved again.</div>
     <?php elseif ($existing['status'] === 'rejected'): ?>
-      <div class="alert alert-warning">This vacancy was rejected. Saving your changes submits it for approval again.</div>
+      <div class="alert alert-warning">This vacancy was rejected. Saving your changes submits it for approval again.
+        <?php if (!empty($existing['moderation_note'])): ?><div class="mt-1"><strong>Reason given by the administrator:</strong> <?= e($existing['moderation_note']) ?></div><?php endif; ?></div>
     <?php else: ?>
       <p class="text-muted mb-4">This vacancy is waiting for approval.</p>
     <?php endif; ?>

@@ -64,7 +64,7 @@ function vacancy_is_expired(array $vacancy): bool
 /** All vacancies of ONE employer, newest first, with their skill names joined into one text. */
 function get_employer_vacancies(int $employerId, ?int $limit = null): array
 {
-    $sql = 'SELECT v.id, v.title, v.position_type, v.location, v.allowance, v.deadline, v.status, v.created_at,
+    $sql = 'SELECT v.id, v.title, v.position_type, v.location, v.allowance, v.deadline, v.status, v.moderation_note, v.created_at,
                    GROUP_CONCAT(s.name ORDER BY s.name SEPARATOR \', \') AS skill_names
             FROM vacancies v
             LEFT JOIN vacancy_skills vs ON vs.vacancy_id = v.id
@@ -96,7 +96,7 @@ function get_employer_vacancy_counts(int $employerId): array
 function get_vacancy_for_employer(int $vacancyId, int $employerId): ?array
 {
     $stmt = db()->prepare(
-        'SELECT id, title, position_type, description, location, allowance, deadline, status
+        'SELECT id, title, position_type, description, location, allowance, deadline, status, moderation_note
          FROM vacancies WHERE id = :id AND employer_id = :e'
     );
     $stmt->execute([':id' => $vacancyId, ':e' => $employerId]);
@@ -272,7 +272,8 @@ function save_vacancy(int $employerId, ?int $vacancyId, array $data): array
             $pdo->prepare(
                 'UPDATE vacancies
                  SET title = :title, position_type = :type, description = :description, location = :location,
-                     allowance = :allowance, deadline = :deadline, status = :status
+                     allowance = :allowance, deadline = :deadline, status = :status,
+                     moderation_note = NULL            -- new text: the old reason no longer applies
                  WHERE id = :id AND employer_id = :employer'
             )->execute($params + [':status' => $status, ':id' => $vacancyId, ':employer' => $employerId]);
             $pdo->prepare('DELETE FROM vacancy_skills WHERE vacancy_id = :id')->execute([':id' => $vacancyId]);

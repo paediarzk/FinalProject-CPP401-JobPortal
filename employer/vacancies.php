@@ -41,7 +41,12 @@ require __DIR__ . '/../includes/header.php';
               <?= e($v['deadline']) ?>
               <?php if (vacancy_is_expired($v)): ?><div><span class="badge text-bg-light border">Deadline passed</span></div><?php endif; ?>
             </td>
-            <td><?= vacancy_status_badge($v['status']) ?></td>
+            <td>
+              <?= vacancy_status_badge($v['status']) ?>
+              <?php if ($v['status'] === 'rejected' && !empty($v['moderation_note'])): ?>
+                <div class="small text-muted mt-1" style="max-width: 18rem;"><strong>Reason:</strong> <?= e($v['moderation_note']) ?></div>
+              <?php endif; ?>
+            </td>
             <td class="text-end text-nowrap">
               <?php if ($v['status'] !== 'closed'): ?>
                 <a class="btn btn-outline-secondary btn-sm" href="<?= e(url('employer/vacancy_form.php?id=' . (int)$v['id'])) ?>">Edit</a>

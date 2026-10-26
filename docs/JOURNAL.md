@@ -74,6 +74,18 @@ This journal records problems encountered during implementation, their causes, a
 - **Result:** [Confirm what you saw after pressing Go.]
 - **Lesson learned:** Warnings of the editor must be distinguished from errors returned by the server. Back up before destructive changes and verify the result with queries.
 
+---
+
+## Entry 7 – Defects found while testing the administrator module
+
+- **Date:** 2026-10-22
+- **Phase:** Milestone 3a – Testing
+- **Problem:** (1) A user who was already logged in could keep using the system after the administrator suspended the account. (2) After logging out, or after being refused because of a suspension, the confirmation message was never displayed.
+- **Cause:** (1) Access control only read the session and the account status was checked only at login. (2) The session was destroyed and started again in the same request; PHP reused the old session ID and sent no new cookie, while the old cookie had just been deleted.
+- **Solution:** (1) `require_role()` now checks the account status in the database on every protected request. (2) A helper, `logout_with_message()`, creates a new session ID so that a new cookie is sent and one message can be shown.
+- **Result:** Verified with automated tests and in a browser: a suspended user is sent to the login page at the next click with the suspension message, and the logout message is displayed.
+- **Lesson learned:** Test the whole life of a session, not only the login. Security rules that depend on a changing status (suspension) must be checked on every request.
+
 
 ## Entry template (copy for new entries)
 ## Entry N – Short title of the problem
@@ -94,6 +106,7 @@ This journal records problems encountered during implementation, their causes, a
 | M2-A – Job seeker profile | 2026-10-09 | 2026-10-14| | |
 | M2-B – Languages, CV, Education | 2026-10-14 | 2026-10-18 | | |
 | M2-C – Employer vacancies | 2026-10-18 | 2026-10-20 | | Tag m2-profile-vacancy |
+| M3-A – Administrator module | 2026-10-21 | 2026-10-26 | | |
 
 **Software versions:** PHP 8.2.4 · MariaDB 10.4.28 · Apache 2.4.56 · XAMPP 8.2.4 (Control Panel v3.3.0) · Bootstrap 5.3.3 (via CDN)
 **Operating system:** Windows 11 Home · **Browser used for testing:** Microsoft Edge 155.0.4283.45 · **Editor:** Visual Studio Code v1.141.0 · **Version control:** Git version 2.56.0.windows.1
@@ -131,3 +144,9 @@ This journal records problems encountered during implementation, their causes, a
 - **Decision:** Allowance is a whole amount in IDR per month (optional); required skills are chosen from the predefined list (up to 10, optional); the deadline must lie between today and one year ahead, using Jakarta time.
 - **Rationale:** Prevents typing errors and keeps data comparable; Jakarta time avoids dependence on the server's time zone setting.
 - **Status:** Implemented (Milestone 2-C).
+
+### Decision 7 – Administrator moderation rules
+- **Decision:** The administrator approves or rejects pending vacancies and can take down published ones. Rejecting and taking down need a written reason (5 to 500 characters), stored in `moderation_note` and shown to the employer. A vacancy cannot be approved when its deadline has passed or its employer is suspended. A rejected vacancy returns to "pending" only when the employer edits and resubmits it. The administrator can suspend and re-activate job seeker and employer accounts, but not administrator accounts and not their own account. A suspended account loses access at its next request.
+- **Alternatives considered:** Publishing automatically and checking afterwards; rejecting without a reason; deleting vacancies.
+- **Rationale:** The employer needs to know what to fix; a decision must not be possible on a vacancy that cannot be shown anyway; an account must not stay usable after suspension.
+- **Status:** Implemented (Milestone 3a, migration 006).

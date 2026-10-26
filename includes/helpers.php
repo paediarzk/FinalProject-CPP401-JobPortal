@@ -68,6 +68,25 @@ function dashboard_path(string $role): string
     };
 }
 
+/**
+ * An account suspended by the administrator must lose access IMMEDIATELY, not only at the next login.
+ * The session still says "logged in", so the database is asked on every protected request
+ * (one small query by primary key).
+ */
+function enforce_active_account(array $user): void
+{
+    $stmt = db()->prepare('SELECT status FROM users WHERE id = :id');
+    $stmt->execute([':id' => $user['id']]);
+    $status = $stmt->fetchColumn();
+
+    if ($status !== 'active') {                    // suspended, or the account no longer exists
+        logout_with_message('warning', $status === false
+            ? 'Your session has ended. Please log in again.'
+            : 'Your account has been suspended. Please contact the administrator.');
+        redirect('login.php');
+    }
+}
+
 /** Guard: call at top of any protected page. */
 function require_role(string $role): array
 {
@@ -76,6 +95,7 @@ function require_role(string $role): array
         flash_set('warning', 'Please log in first.');
         redirect('login.php');
     }
+    enforce_active_account($user);
     if ($user['role'] !== $role) {
         http_response_code(403);
         exit('403 Forbidden - you do not have access to this page.');

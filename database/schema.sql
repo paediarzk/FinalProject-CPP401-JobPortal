@@ -109,6 +109,7 @@ CREATE TABLE vacancies (
   allowance     DECIMAL(12,2) NULL,              -- optional (Table 3.1)
   deadline      DATE NOT NULL,
   status        ENUM('pending','published','closed','rejected') NOT NULL DEFAULT 'pending',
+  moderation_note VARCHAR(500) NULL,             -- reason given by the administrator on reject / take down
   created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_vac_emp FOREIGN KEY (employer_id) REFERENCES employers(user_id) ON DELETE CASCADE,
   -- Indexes support the search/filter feature (Milestone 3):

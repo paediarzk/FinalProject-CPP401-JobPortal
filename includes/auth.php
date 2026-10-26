@@ -182,6 +182,19 @@ function attempt_login(string $email, string $password): ?string
     return null;
 }
 
+/**
+ * End the current login but keep a (new, empty) session so ONE message can be shown on the next page.
+ * session_destroy() followed by session_start() does not work for this: PHP reuses the old session ID and
+ * sends no new cookie, while the old cookie has just been deleted - so the message would be lost.
+ * A fresh ID from session_regenerate_id(true) sends a new cookie and discards the old session data.
+ */
+function logout_with_message(string $type, string $message): void
+{
+    $_SESSION = [];
+    session_regenerate_id(true);
+    flash_set($type, $message);
+}
+
 function logout_user(): void
 {
     $_SESSION = [];
