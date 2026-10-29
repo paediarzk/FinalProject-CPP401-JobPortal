@@ -313,3 +313,115 @@ function close_vacancy(int $vacancyId, int $employerId): string
         ->execute([':id' => $vacancyId, ':e' => $employerId]);
     return 'closed';
 }
+
+/* ===================== public vacancies (Milestone 3-B) =====================
+ * What a visitor (guest, job seeker, employer or administrator) may see:
+ *   status = 'published'  AND  deadline today or later (Jakarta time, see vacancy_today()).
+ * Pending, rejected and closed vacancies - and published ones whose deadline has passed - are never returned,
+ * so every page that uses these functions is safe to show to anyone.
+ */
+
+const PUBLIC_PAGE_SIZE     = 12;     // results per page on vacancies.php
+const PUBLIC_HOME_LATEST   = 6;      // vacancies shown on the home page
+const PUBLIC_FILTER_MAXLEN = 100;    // keyword / location length limit (same as the administrator search)
+
+/**
+ * Read the search criteria from the URL (?q=...&type=...&location=...).
+ * Nothing is trusted: arrays, unknown position types and over-long text are reduced to "no filter".
+ * Returns ['q' => string, 'type' => string, 'location' => string]; an empty string means "not used".
+ */
+function read_public_filters(array $get): array
+{
+    $text = static function (string $key) use ($get): string {
+        $v = $get[$key] ?? '';
+        return is_string($v) ? mb_substr(trim($v), 0, PUBLIC_FILTER_MAXLEN) : '';
+    };
+    $type = $get['type'] ?? '';
+    return [
+        'q'        => $text('q'),
+        'type'     => (is_string($type) && array_key_exists($type, POSITION_TYPES)) ? $type : '',
+        'location' => $text('location'),
+    ];
+}
+
+/** Build the WHERE part shared by the count and the list, so both always agree. Returns [sql, params]. */
+function public_vacancy_where(array $filters): array
+{
+    $where  = ["v.status = 'published'", 'v.deadline >= :today'];
+    $params = [':today' => vacancy_today()->format('Y-m-d')];
+
+    if (($filters['type'] ?? '') !== '' && array_key_exists($filters['type'], POSITION_TYPES)) {
+        $where[] = 'v.position_type = :type';
+        $params[':type'] = $filters['type'];
+    }
+    $location = trim((string)($filters['location'] ?? ''));
+    if ($location !== '') {
+        $where[] = 'v.location LIKE :loc';
+        $params[':loc'] = '%' . escape_like($location) . '%';
+    }
+    $q = trim((string)($filters['q'] ?? ''));
+    if ($q !== '') {
+        // Keyword: position title, company name, or the name of a required skill (whole text, partial match).
+        // Native prepared statements do not allow the same :name twice, so each use has its own name.
+        $where[] = '(v.title LIKE :like1 OR e.company_name LIKE :like2 OR EXISTS (
+                        SELECT 1 FROM vacancy_skills vs2 JOIN skills s2 ON s2.id = vs2.skill_id
+                        WHERE vs2.vacancy_id = v.id AND s2.name LIKE :like3))';
+        $params[':like1'] = $params[':like2'] = $params[':like3'] = '%' . escape_like($q) . '%';
+    }
+    return [implode(' AND ', $where), $params];
+}
+
+/** Number of public vacancies that match the criteria. */
+function count_public_vacancies(array $filters): int
+{
+    [$where, $params] = public_vacancy_where($filters);
+    $stmt = db()->prepare('SELECT COUNT(*) FROM vacancies v JOIN employers e ON e.user_id = v.employer_id WHERE ' . $where);
+    $stmt->execute($params);
+    return (int)$stmt->fetchColumn();
+}
+
+/**
+ * One page of public vacancies, newest first. The id is a tie-breaker so that vacancies posted in the same
+ * second keep a fixed order: no row appears twice or disappears when the visitor moves between pages.
+ */
+function search_public_vacancies(array $filters, int $limit, int $offset): array
+{
+    [$where, $params] = public_vacancy_where($filters);
+    $stmt = db()->prepare(
+        'SELECT v.id, v.title, v.position_type, v.location, v.allowance, v.deadline, v.created_at,
+                e.company_name,
+                (SELECT GROUP_CONCAT(s.name ORDER BY s.name SEPARATOR \', \')
+                   FROM vacancy_skills vs JOIN skills s ON s.id = vs.skill_id
+                  WHERE vs.vacancy_id = v.id) AS skill_names
+         FROM vacancies v
+         JOIN employers e ON e.user_id = v.employer_id
+         WHERE ' . $where . '
+         ORDER BY v.created_at DESC, v.id DESC
+         LIMIT ' . max(1, $limit) . ' OFFSET ' . max(0, $offset)      // both are ints, so this is safe
+    );
+    $stmt->execute($params);
+    return $stmt->fetchAll();
+}
+
+/** One public vacancy with company information and skills. Null if it does not exist OR is not public. */
+function get_public_vacancy(int $vacancyId): ?array
+{
+    $stmt = db()->prepare(
+        "SELECT v.id, v.title, v.position_type, v.description, v.location, v.allowance, v.deadline, v.created_at,
+                e.company_name, e.industry_sector, e.description AS company_description
+         FROM vacancies v
+         JOIN employers e ON e.user_id = v.employer_id
+         WHERE v.id = :id AND v.status = 'published' AND v.deadline >= :today"
+    );
+    $stmt->execute([':id' => $vacancyId, ':today' => vacancy_today()->format('Y-m-d')]);
+    $row = $stmt->fetch();
+    if ($row === false) {
+        return null;
+    }
+    $skills = db()->prepare(
+        'SELECT s.name FROM vacancy_skills vs JOIN skills s ON s.id = vs.skill_id WHERE vs.vacancy_id = :id ORDER BY s.name'
+    );
+    $skills->execute([':id' => $vacancyId]);
+    $row['skills'] = $skills->fetchAll(PDO::FETCH_COLUMN);
+    return $row;
+}

@@ -87,6 +87,18 @@ function enforce_active_account(array $user): void
     }
 }
 
+/**
+ * For PUBLIC pages (home, vacancy list, vacancy detail): they do not require a login, but if someone IS logged in
+ * and the administrator has suspended the account, the page must not keep showing them as logged in.
+ */
+function refresh_public_session(): void
+{
+    $user = current_user();
+    if ($user !== null) {
+        enforce_active_account($user);
+    }
+}
+
 /** Guard: call at top of any protected page. */
 function require_role(string $role): array
 {

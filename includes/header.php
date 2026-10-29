@@ -26,6 +26,7 @@ $flash = flash_get();
            height="36" style="height:36px; width:auto; max-height:36px;">
     </a>
     <div class="ms-auto d-flex align-items-center gap-2">
+      <a class="btn btn-sm btn-link text-decoration-none" href="<?= e(url('vacancies.php')) ?>">Browse vacancies</a>
       <?php if ($user): ?>
         <span class="navbar-text me-2"><?= e($user['name']) ?></span>
         <a class="btn btn-sm btn-outline-dark" href="<?= e(url(dashboard_path($user['role']))) ?>">Dashboard</a>

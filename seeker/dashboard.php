@@ -34,5 +34,10 @@ require __DIR__ . '/../includes/header.php';
   <?php endif; ?>
 </section>
 
-<p class="text-muted small">Vacancy search and applications will be available in Milestone 3.</p>
+<section class="app-card" style="max-width: 40rem;">
+  <h2 class="app-card__title">Vacancies</h2>
+  <p class="mb-3">Search internships and entry-level jobs by keyword, position type and location.</p>
+  <a class="btn btn-brand btn-sm" href="<?= e(url('vacancies.php')) ?>">Browse vacancies</a>
+</section>
+<p class="text-muted small">Applying for vacancies will be available in Milestone 3c.</p>
 <?php require __DIR__ . '/../includes/footer.php'; ?>

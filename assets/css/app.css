@@ -63,3 +63,7 @@
   padding: 1rem 1.1rem;
   margin-bottom: 0.9rem;
 }
+
+/* Vacancy cards (home page and vacancy list, Milestone 3-B) */
+.vacancy-card { transition: border-color 0.15s ease; }
+.vacancy-card:hover { border-color: var(--fs-blue, #0868f8); }
