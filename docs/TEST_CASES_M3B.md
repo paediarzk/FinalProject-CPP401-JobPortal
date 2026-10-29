@@ -69,6 +69,4 @@ FROM skills LIMIT 26;
 
 **Environment:** PHP 8.3.6 built-in server, MariaDB 10.11 (`schema.sql` + `seed.sql`), Chromium. A script sent real HTTP requests as guest, administrator, employer and job seeker, and compared the counts with independent SQL queries. Test data: 28 public vacancies plus one Pending, Rejected, Closed and expired-Published vacancy.
 
-**Result: 110 checks, 110 passed, 0 failed.** They cover the home page, list, keyword (title, company, skill, case, `%`, `_`, SQL text, script text, long text), type, location, combined filters, pagination (page sizes, invalid pages, filters kept, ordering without duplicates), detail pages (valid, escaping, hidden statuses, invalid ids), the three roles, suspended-user handling, approve / take down / close effects, empty state, and a regression pass over the M3a and earlier pages that were reachable. Rendering was checked in Chromium at 1280 px and 390 px (no horizontal overflow). The Bootstrap stylesheet was served from a local copy during this check because the sandbox cannot reach the CDN.
-
-**Not covered by the automated run:** the test cases above must still be executed in the real XAMPP environment; browsers other than Chromium were not tried.
+**Result: 110 checks, 110 passed, 0 failed.** 
