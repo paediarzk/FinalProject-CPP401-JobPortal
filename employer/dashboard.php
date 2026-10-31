@@ -1,10 +1,12 @@
 <?php
 require_once __DIR__ . '/../includes/bootstrap.php';
 require_once __DIR__ . '/../includes/vacancy.php';
+require_once __DIR__ . '/../includes/application.php';
 
 $user   = require_role('employer');
 $counts = get_employer_vacancy_counts($user['id']);
 $recent = get_employer_vacancies($user['id'], 5);
+$appCounts = get_employer_application_counts($user['id']);
 
 $pageTitle = 'Employer Dashboard';
 require __DIR__ . '/../includes/header.php';
@@ -50,5 +52,16 @@ require __DIR__ . '/../includes/header.php';
     </ul>
   <?php endif; ?>
 </section>
-<p class="text-muted small">Applicants will be shown here when applications are available (Milestone 3).</p>
+<section class="app-card">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h2 class="app-card__title mb-0">Applications received</h2>
+    <a class="small" href="<?= e(url('employer/applications.php')) ?>">View all</a>
+  </div>
+  <?php if ($appCounts['all'] === 0): ?>
+    <p class="text-muted mb-0">No one has applied yet.</p>
+  <?php else: ?>
+    <p class="mb-0"><?= (int)$appCounts['all'] ?> in total &middot;
+      <a href="<?= e(url('employer/applications.php?status=submitted')) ?>"><?= (int)$appCounts['submitted'] ?> waiting for review</a></p>
+  <?php endif; ?>
+</section>
 <?php require __DIR__ . '/../includes/footer.php'; ?>
