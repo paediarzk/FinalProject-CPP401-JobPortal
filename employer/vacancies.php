@@ -1,9 +1,11 @@
 <?php
 require_once __DIR__ . '/../includes/bootstrap.php';
 require_once __DIR__ . '/../includes/vacancy.php';
+require_once __DIR__ . '/../includes/application.php';
 
 $user      = require_role('employer');
 $vacancies = get_employer_vacancies($user['id']);       // only THIS employer's vacancies
+$applicantCounts = get_employer_vacancy_application_counts($user['id']);
 
 $pageTitle = 'My Vacancies';
 require __DIR__ . '/../includes/header.php';
@@ -48,6 +50,7 @@ require __DIR__ . '/../includes/header.php';
               <?php endif; ?>
             </td>
             <td class="text-end text-nowrap">
+              <a class="btn btn-outline-secondary btn-sm" href="<?= e(url('employer/applications.php?vacancy=' . (int)$v['id'])) ?>">Applicants (<?= (int)($applicantCounts[(int)$v['id']] ?? 0) ?>)</a>
               <?php if ($v['status'] !== 'closed'): ?>
                 <a class="btn btn-outline-secondary btn-sm" href="<?= e(url('employer/vacancy_form.php?id=' . (int)$v['id'])) ?>">Edit</a>
                 <form method="post" action="<?= e(url('employer/vacancy_close.php')) ?>" class="d-inline"
@@ -56,8 +59,6 @@ require __DIR__ . '/../includes/header.php';
                   <input type="hidden" name="id" value="<?= (int)$v['id'] ?>">
                   <button class="btn btn-outline-danger btn-sm" type="submit">Close</button>
                 </form>
-              <?php else: ?>
-                <span class="text-muted small">&mdash;</span>
               <?php endif; ?>
             </td>
           </tr>
