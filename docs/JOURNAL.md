@@ -71,7 +71,7 @@ This journal records problems encountered during implementation, their causes, a
 - **Problem:** After pasting migration 005 into the SQL tab of phpMyAdmin, the editor showed several red error markers (for example "Unexpected token"), before the query was executed.
 - **Cause:** The markers come from the editor's built-in syntax checker, not from the database server. The checker does not recognise some MariaDB syntax used in the script (CHECK constraints and SQL written inside quoted text for a prepared statement).
 - **Solution:** The database was exported first and the old data was photographed; the script was then executed with the "Go" button. The result was verified by browsing the new table and the structure of `job_seekers`.
-- **Result:** [Confirm what you saw after pressing Go.]
+- **Result:** 
 - **Lesson learned:** Warnings of the editor must be distinguished from errors returned by the server. Back up before destructive changes and verify the result with queries.
 
 ---
@@ -85,6 +85,18 @@ This journal records problems encountered during implementation, their causes, a
 - **Solution:** (1) `require_role()` now checks the account status in the database on every protected request. (2) A helper, `logout_with_message()`, creates a new session ID so that a new cookie is sent and one message can be shown.
 - **Result:** Verified with automated tests and in a browser: a suspended user is sent to the login page at the next click with the suspension message, and the logout message is displayed.
 - **Lesson learned:** Test the whole life of a session, not only the login. Security rules that depend on a changing status (suspension) must be checked on every request.
+
+---
+
+## Entry 8 – MariaDB would not start after an unclean shutdown (InnoDB redo log mismatch)
+
+- **Date:** 2026-10-31
+- **Phase:** Milestone 3-C – Testing
+- **Problem:** The MySQL service in the XAMPP Control Panel stopped immediately after it was started. The error log never reached "ready for connections" and reported a mismatch between the InnoDB redo log and the system tablespace (log sequence number). After the service was forced to start with `innodb_force_recovery=2`, pages on localhost loaded endlessly, and later the application showed `SQLSTATE[42S02]: Base table or view not found: 1932 Table 'jobportal.users' doesn't exist in engine`.
+- **Probable cause:** The database files were not closed cleanly (probably the computer or XAMPP was stopped while MariaDB was running), so the redo log and the data file `ibdata1` no longer matched. The exact trigger was not confirmed.
+- **Solution:** The error log was read first. The service was started in recovery mode (`innodb_force_recovery=2`), which is read-only for practical purposes, and the data was exported. The recovery setting was then removed, the database was recreated on a clean data directory, and `schema.sql`, `seed.sql` and the exported data were imported again.
+- **Result:** The service started normally, the `jobportal` database contained all tables, and the Milestone 3-C test cases were completed afterwards.
+- **Lesson learned:** Stop MySQL from the Control Panel before closing XAMPP or shutting down the computer. Keep a regular export of the database (`mysqldump` or phpMyAdmin Export) and keep `schema.sql` and `seed.sql` in Git so that the database can always be rebuilt. Read the MariaDB error log (`xampp\mysql\data\*.err`) before trying other fixes.
 
 
 ## Entry template (copy for new entries)
@@ -107,6 +119,8 @@ This journal records problems encountered during implementation, their causes, a
 | M2-B – Languages, CV, Education | 2026-10-14 | 2026-10-18 | | |
 | M2-C – Employer vacancies | 2026-10-18 | 2026-10-20 | | Tag m2-profile-vacancy |
 | M3-A – Administrator module | 2026-10-21 | 2026-10-26 | | |
+| M3-B – Homepage, vacancy search, filters, detail page and pagination | 2026-10-26 | 2026-10-28 | | |
+| M3-C – Applications, application tracking, employer review and CV access | 2026-10-29 | 2026-10-30 | | Tag m3-search-applications |
 
 **Software versions:** PHP 8.2.4 · MariaDB 10.4.28 · Apache 2.4.56 · XAMPP 8.2.4 (Control Panel v3.3.0) · Bootstrap 5.3.3 (via CDN)
 **Operating system:** Windows 11 Home · **Browser used for testing:** Microsoft Edge 155.0.4283.45 · **Editor:** Visual Studio Code v1.141.0 · **Version control:** Git version 2.56.0.windows.1
@@ -127,7 +141,7 @@ This journal records problems encountered during implementation, their causes, a
 ### Decision 3 – New vacancies start as "pending"
 - **Decision:** A vacancy posted by an employer has the status "pending" until an administrator approves it (Milestone 3).
 - **Rationale:** Reduces fake or inappropriate postings before they become visible to job seekers.
-- **Status:** To be implemented in Milestone 2-C (status field) and Milestone 3 (approval).
+- **Status:** implemented in Milestone 2-C (status field) and Milestone 3 (approval).
 
 ### Decision 4 – Education stored as multiple entries in its own table
 - **Decision:** Education is stored in the table `educations` (1 to 5 entries per job seeker: school or university, degree, field of study, GPA on a 4.00 scale, start and end year). The education level and institution entered at registration become the first entry; the two old columns of `job_seekers` were removed after their data was copied.
